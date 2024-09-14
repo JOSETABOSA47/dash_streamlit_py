@@ -15,7 +15,7 @@ st.markdown(
         color: #7f4307;
     }
     </style>
-    <h1 class="title">VENDAS GERAL</h1>
+    <h1 class="title">VENDAS DE HOJE NO BLING</h1>
     """,
     unsafe_allow_html=True
 )
