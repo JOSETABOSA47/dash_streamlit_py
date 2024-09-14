@@ -1,11 +1,28 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from streamlit_card import card
 
-from st_card import st_card # type: ignore
-st_card('Completed Orders', value=76.4, show_progress=True)
+# card('Completed Orders', value=76.4, show_progress=True)
 
 st.title('VENDAS DE HOJE NO BLING')
+
+res = card(
+    title="Streamlit Card",
+    text="This is a test card",
+    image="https://placekitten.com/500/500",
+    styles={
+        "card": {
+            "width": "500px",
+            "height": "500px",
+            "border-radius": "60px",
+            "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
+        },
+        "text": {
+            "font-family": "serif",
+        }
+    }
+)
 
 DATE_COLUMN = 'date/time'
 DATA_URL = ('https://s3-us-west-2.amazonaws.com/'
