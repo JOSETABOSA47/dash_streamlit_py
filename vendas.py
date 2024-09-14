@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+from st_card import st_card # type: ignore
+st_card('Completed Orders', value=76.4, show_progress=True)
+
 st.title('VENDAS DE HOJE NO BLING')
 
 DATE_COLUMN = 'date/time'
