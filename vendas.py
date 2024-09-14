@@ -39,62 +39,62 @@ lista_pedidos_mamoeiroce = []
 lista_produtos_mamoeiroce = []
 totalvendas_mamoeiroce = 0
 
-@st.cache_data
-def load_data(nrows):
+# @st.cache_data
+# def load_data(nrows):
 #     # data = pd.read_csv(DATA_URL, nrows=nrows)
 #     # lowercase = lambda x: str(x).lower()
 #     # data.rename(lowercase, axis='columns', inplace=True)
 #     # data[DATE_COLUMN] = pd.to_datetime(data[DATE_COLUMN])
 
-    apimemoeiroce = f"/Api/v3/pedidos/vendas?pagina=1&limite=200&dataInicial={dataatual_api}"
-    conn_mamoeiroce = http.client.HTTPSConnection("api.bling.com.br")
+apimemoeiroce = f"/Api/v3/pedidos/vendas?pagina=1&limite=200&dataInicial={dataatual_api}"
+conn_mamoeiroce = http.client.HTTPSConnection("api.bling.com.br")
+payload = ''
+headers = {
+    'Accept': 'application/json',
+    'Authorization': 'Bearer 444c1e677ebe0e68b745144e48545e9017a5c4bb',
+    'Cookie': 'PHPSESSID=5rduhjhej10cvkb8a6jgljkorv'
+}
+conn_mamoeiroce.request("GET", apimemoeiroce, payload, headers)
+res = conn_mamoeiroce.getresponse()
+databling_mamoeiroce = json.loads(res.read())
+conn_mamoeiroce.close()
+for tem_mamoeiroce in databling_mamoeiroce["data"]:
+    # totalvendas_mamoeiroce = totalvendas_mamoeiroce + tem_mamoeiroce["total"]
+    lista_pedidos_mamoeiroce.append(tem_mamoeiroce["id"])
+
+CONTA = 0
+for pedidos in lista_pedidos_mamoeiroce:
+    CONTA = CONTA + 1
+    print(pedidos)
+    apipedidos= f"/Api/v3/pedidos/vendas/{pedidos}"
+    conn_pedidos = http.client.HTTPSConnection("api.bling.com.br")
     payload = ''
     headers = {
         'Accept': 'application/json',
         'Authorization': 'Bearer 444c1e677ebe0e68b745144e48545e9017a5c4bb',
         'Cookie': 'PHPSESSID=5rduhjhej10cvkb8a6jgljkorv'
     }
-    conn_mamoeiroce.request("GET", apimemoeiroce, payload, headers)
-    res = conn_mamoeiroce.getresponse()
-    databling_mamoeiroce = json.loads(res.read())
-    conn_mamoeiroce.close()
-    for tem_mamoeiroce in databling_mamoeiroce["data"]:
-        # totalvendas_mamoeiroce = totalvendas_mamoeiroce + tem_mamoeiroce["total"]
-        lista_pedidos_mamoeiroce.append(tem_mamoeiroce["id"])
+    conn_pedidos.request("GET", apipedidos, payload, headers)
+    res = conn_pedidos.getresponse()
+    print(f"{CONTA} - STATUS - ", res.status, "E CONECÇÃO - ", res.reason)
+    data_mamoeiroce = json.loads(res.read())
+    conn_pedidos.close()
+    time.sleep(0.5)
 
-    CONTA = 0
-    for pedidos in lista_pedidos_mamoeiroce:
-        CONTA = CONTA + 1
-        print(pedidos)
-        apipedidos= f"/Api/v3/pedidos/vendas/{pedidos}"
-        conn_pedidos = http.client.HTTPSConnection("api.bling.com.br")
-        payload = ''
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer 444c1e677ebe0e68b745144e48545e9017a5c4bb',
-            'Cookie': 'PHPSESSID=5rduhjhej10cvkb8a6jgljkorv'
-        }
-        conn_pedidos.request("GET", apipedidos, payload, headers)
-        res = conn_pedidos.getresponse()
-        print(f"{CONTA} - STATUS - ", res.status, "E CONECÇÃO - ", res.reason)
-        data_mamoeiroce = json.loads(res.read())
-        conn_pedidos.close()
-        time.sleep(0.5)
-
-        try:
-            for produtos in data_mamoeiroce["data"]["itens"]:
-                print(produtos)
-                lista_produtos_mamoeiroce.append(produtos)
-        except:
-            print("ERRRRRRROOOOOO ", pedidos)
-            continue
-        # print(data_mamoeiroce)
-        # print(apipedidos)
-        # break
-    return lista_produtos_mamoeiroce
+    try:
+        for produtos in data_mamoeiroce["data"]["itens"]:
+            print(produtos)
+            lista_produtos_mamoeiroce.append(produtos)
+    except:
+        print("ERRRRRRROOOOOO ", pedidos)
+        continue
+    # print(data_mamoeiroce)
+    # print(apipedidos)
+    # break
+    # return lista_produtos_mamoeiroce
 
 data_load_state = st.text('Carregando dados...')
-data = load_data(10000)
+# data = load_data(10000)
 data_load_state.text(f"ATUALIZAÇAO {data_formatada}")
 
 for tem in lista_produtos_mamoeiroce:
