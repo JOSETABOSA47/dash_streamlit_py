@@ -1,9 +1,83 @@
+# streamlit run vendas.py --server.enableCORS false --server.enableXsrfProtection false
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import http.client
+import requests
+import base64
 import json
 import time
+import os
+
+ARQUIVO = 'code_refresh_tokenur.txt'
+ARQUIVO_TOKEN = 'code_token.txt'
+
+def gerar_credenciais_base64(client_id, client_secret):
+    """
+    Gera a string de credenciais no formato Base64 a partir do client_id e client_secret.
+    """
+    credentials = f"{client_id}:{client_secret}"
+    return base64.b64encode(credentials.encode()).decode()
+
+def refresh_token(token, client_id, client_secret):
+    """
+    Realiza a renovação do token OAuth com o Bling.
+    """
+    url = "https://www.bling.com.br/Api/v3/oauth/token"
+    
+    # Gera as credenciais em Base64
+    credentials_base64 = gerar_credenciais_base64(client_id, client_secret)
+
+    # Cabeçalhos da solicitação
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "1.0",
+        "Authorization": f"Basic {credentials_base64}"
+    }
+    
+    # Corpo da solicitação
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": token
+    }
+    
+    # Fazendo a solicitação POST
+    response = requests.post(url, headers=headers, data=data)
+    
+    # Verifica se a resposta foi bem-sucedida
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": response.status_code, "message": response.json()}
+
+code_refresh_token_txt = ""
+code_token = ""
+
+if os.path.exists(fr'{ARQUIVO}'):
+        with open(fr'{ARQUIVO}', 'r') as f:
+            code_refresh_token_txt = f.read()
+
+print("Codigo atigo - ", code_refresh_token_txt)
+
+
+# Exemplo de uso
+if __name__ == "__main__":
+    token = code_refresh_token_txt
+    client_id = "2513df2cb9cb0659c1ad5634aede3a5f3f7c7289"
+    client_secret = "e566668de857856c2129934799bcbb5806dfec7524f9be15ff3a8cfafb0b"
+
+    resultado = refresh_token(token, client_id, client_secret)
+    code_token = resultado["access_token"]
+    print(resultado)
+
+
+    if os.path.exists(fr'{ARQUIVO}'):
+        with open(fr'{ARQUIVO}', 'r') as f:
+            code_refresh_token = resultado["refresh_token"]
+    with open(rf'{ARQUIVO}', 'w+') as f:
+        f.write(str(code_refresh_token))
+
 
 from operator import sub
 from datetime import datetime, date, timedelta
@@ -51,7 +125,7 @@ conn_mamoeiroce = http.client.HTTPSConnection("api.bling.com.br")
 payload = ''
 headers = {
     'Accept': 'application/json',
-    'Authorization': 'Bearer 444c1e677ebe0e68b745144e48545e9017a5c4bb',
+    'Authorization': f'Bearer {code_token}',
     'Cookie': 'PHPSESSID=5rduhjhej10cvkb8a6jgljkorv'
 }
 conn_mamoeiroce.request("GET", apimemoeiroce, payload, headers)
@@ -71,7 +145,7 @@ for pedidos in lista_pedidos_mamoeiroce:
     payload = ''
     headers = {
         'Accept': 'application/json',
-        'Authorization': 'Bearer 444c1e677ebe0e68b745144e48545e9017a5c4bb',
+        'Authorization': f'Bearer {code_token}',
         'Cookie': 'PHPSESSID=5rduhjhej10cvkb8a6jgljkorv'
     }
     conn_pedidos.request("GET", apipedidos, payload, headers)
